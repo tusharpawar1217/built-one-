@@ -34,7 +34,7 @@ Students preparing for government exams struggle with:
 - **S3-compatible storage**: PDF storage (Backblaze B2)
 
 ### ML Pipeline
-- **PDF Parsing**: PyMuPDF + ChandraOCR (Tesseract/EasyOCR/PaddleOCR ensemble)
+- **PDF Parsing**: PyMuPDF + ChandraOCR (PaddleOCR + EasyOCR ensemble)
 - **Embeddings**: bge-m3 (multilingual: English/Hindi/Marathi)
 - **Retrieval**: Hybrid dense+sparse with RRF fusion
 - **Reranker**: bge-reranker-base
@@ -49,7 +49,7 @@ Students preparing for government exams struggle with:
 ## Features (MVP - MPSC Focus)
 
 ### Phase 1 (Current)
-- ✅ User PDF upload with OCR for scanned documents
+- ✅ User PDF upload with advanced OCR (PaddleOCR + EasyOCR) for scanned documents
 - ✅ Semantic search with page-level citations
 - ✅ Multi-page reasoning (summarization, synthesis)
 - ✅ Per-user document isolation

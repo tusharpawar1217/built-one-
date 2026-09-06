@@ -1,12 +1,12 @@
-"""PDF processing with native text extraction and OCR fallback."""
+"""PDF processing with native text extraction and advanced OCR fallback."""
 import hashlib
 import logging
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 import fitz  # PyMuPDF
-import pytesseract
 from PIL import Image
 import io
+import numpy as np
 
 from app.config import get_settings
 
@@ -15,14 +15,20 @@ settings = get_settings()
 
 
 class PDFProcessor:
-    """Handle PDF text extraction with smart OCR fallback."""
+    """Handle PDF text extraction with smart OCR fallback using ChandraOCR ensemble."""
     
     def __init__(self):
-        """Initialize PDF processor."""
+        """Initialize PDF processor with OCR engines."""
         self.settings = settings
-        # Configure tesseract if path provided
-        if self.settings.tesseract_cmd != "tesseract":
-            pytesseract.pytesseract.tesseract_cmd = self.settings.tesseract_cmd
+        self.ocr_engine = None
+        
+        # Initialize ChandraOCR ensemble
+        try:
+            from app.services.chandra_ocr import ChandraOCR
+            self.ocr_engine = ChandraOCR()
+            logger.info("ChandraOCR ensemble initialized successfully")
+        except Exception as e:
+            logger.warning(f"Failed to initialize ChandraOCR: {e}. OCR will be disabled.")
     
     def get_document_hash(self, file_path: Path) -> str:
         """Generate hash for document to enable caching."""
@@ -49,20 +55,21 @@ class PDFProcessor:
         return len(text.strip()) < threshold
     
     def extract_text_ocr(self, page: fitz.Page) -> str:
-        """Extract text using OCR (for scanned pages)."""
+        """Extract text using advanced OCR ensemble (PaddleOCR + EasyOCR)."""
+        if not self.ocr_engine:
+            logger.warning("OCR engine not available")
+            return ""
+        
         try:
             # Convert page to image
             pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))  # 2x resolution
             img_data = pix.tobytes("png")
             img = Image.open(io.BytesIO(img_data))
             
-            # Run OCR
-            ocr_text = pytesseract.image_to_string(
-                img,
-                lang=self.settings.ocr_languages,
-                config='--psm 6'  # Assume uniform block of text
-            )
+            # Use ChandraOCR ensemble
+            ocr_text = self.ocr_engine.extract_text(img, languages=self.settings.ocr_languages)
             return ocr_text.strip()
+        
         except Exception as e:
             logger.error(f"OCR extraction failed: {e}")
             return ""
@@ -152,32 +159,145 @@ class PDFProcessor:
 
 class ChandraOCR:
     """
-    Ensemble OCR pipeline (Tesseract + EasyOCR + PaddleOCR).
-    For MVP, we use only Tesseract. Can expand to ensemble later.
+    Advanced OCR ensemble combining PaddleOCR (primary) + EasyOCR (fallback).
+    Optimized for Indic scripts (Hindi, Marathi) and scanned government documents.
     """
     
     def __init__(self):
-        """Initialize ensemble OCR."""
-        self.tesseract_available = True
-        # TODO: Initialize EasyOCR and PaddleOCR when needed
-        self.easyocr_available = False
-        self.paddleocr_available = False
+        """Initialize OCR engines with priority order."""
+        self.paddle_ocr = None
+        self.easy_ocr = None
+        self.engines_available = []
+        
+        # Try to initialize PaddleOCR (best for Indic scripts)
+        try:
+            from paddleocr import PaddleOCR
+            self.paddle_ocr = PaddleOCR(
+                use_angle_cls=True,
+                lang='en',  # Default, will be overridden per call
+                show_log=False,
+                use_gpu=False  # Set to True if GPU available
+            )
+            self.engines_available.append('paddle')
+            logger.info("✅ PaddleOCR initialized successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ PaddleOCR not available: {e}")
+        
+        # Try to initialize EasyOCR (fallback)
+        try:
+            import easyocr
+            # Initialize with English + Hindi + Marathi
+            self.easy_ocr = easyocr.Reader(
+                ['en', 'hi', 'mr'],
+                gpu=False,  # Set to True if GPU available
+                verbose=False
+            )
+            self.engines_available.append('easy')
+            logger.info("✅ EasyOCR initialized successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ EasyOCR not available: {e}")
+        
+        if not self.engines_available:
+            logger.error("❌ No OCR engines available! Install PaddleOCR or EasyOCR")
+        else:
+            logger.info(f"📚 Available OCR engines: {', '.join(self.engines_available)}")
     
-    def extract_with_ensemble(self, image: Image.Image, languages: str) -> str:
-        """
-        Extract text using ensemble of OCR engines.
-        Currently only Tesseract, can add voting/confidence later.
-        """
-        results = []
+    def extract_with_paddle(self, image: Image.Image, languages: str) -> str:
+        """Extract text using PaddleOCR (best quality for Indic scripts)."""
+        if not self.paddle_ocr:
+            return ""
         
-        # Tesseract
-        if self.tesseract_available:
-            try:
-                text = pytesseract.image_to_string(image, lang=languages)
-                results.append(text)
-            except Exception as e:
-                logger.warning(f"Tesseract OCR failed: {e}")
+        try:
+            # Convert PIL Image to numpy array
+            img_array = np.array(image)
+            
+            # Map language codes (paddleocr uses different codes)
+            lang_map = {
+                'eng': 'en',
+                'hin': 'hi',
+                'mar': 'mr',
+                'eng+hin+mar': 'en'  # PaddleOCR handles multilingual well in 'en' mode
+            }
+            paddle_lang = lang_map.get(languages.replace('+', ''), 'en')
+            
+            # Reinitialize with correct language if needed
+            if paddle_lang != 'en':
+                self.paddle_ocr = PaddleOCR(
+                    use_angle_cls=True,
+                    lang=paddle_lang,
+                    show_log=False,
+                    use_gpu=False
+                )
+            
+            # Run OCR
+            result = self.paddle_ocr.ocr(img_array, cls=True)
+            
+            # Extract text from results
+            if result and result[0]:
+                texts = [line[1][0] for line in result[0]]
+                extracted_text = '\n'.join(texts)
+                return extracted_text
+            
+            return ""
         
-        # TODO: Add EasyOCR and PaddleOCR
-        # For now, return Tesseract result
-        return results[0] if results else ""
+        except Exception as e:
+            logger.error(f"PaddleOCR extraction failed: {e}")
+            return ""
+    
+    def extract_with_easy(self, image: Image.Image) -> str:
+        """Extract text using EasyOCR (fallback option)."""
+        if not self.easy_ocr:
+            return ""
+        
+        try:
+            # Convert PIL Image to numpy array
+            img_array = np.array(image)
+            
+            # Run OCR
+            results = self.easy_ocr.readtext(img_array)
+            
+            # Extract text from results
+            if results:
+                texts = [detection[1] for detection in results]
+                extracted_text = '\n'.join(texts)
+                return extracted_text
+            
+            return ""
+        
+        except Exception as e:
+            logger.error(f"EasyOCR extraction failed: {e}")
+            return ""
+    
+    def extract_text(self, image: Image.Image, languages: str = "eng+hin+mar") -> str:
+        """
+        Extract text using best available OCR engine.
+        Tries PaddleOCR first (best quality), falls back to EasyOCR.
+        
+        Args:
+            image: PIL Image object
+            languages: Language codes (e.g., "eng+hin+mar")
+        
+        Returns:
+            Extracted text string
+        """
+        # Try PaddleOCR first (best for Indic scripts)
+        if 'paddle' in self.engines_available:
+            logger.debug("Using PaddleOCR (primary)")
+            text = self.extract_with_paddle(image, languages)
+            if text and len(text.strip()) > 20:  # Reasonable text extracted
+                return text
+            logger.debug("PaddleOCR returned insufficient text, trying EasyOCR")
+        
+        # Fallback to EasyOCR
+        if 'easy' in self.engines_available:
+            logger.debug("Using EasyOCR (fallback)")
+            text = self.extract_with_easy(image)
+            if text:
+                return text
+        
+        logger.warning("All OCR engines failed or unavailable")
+        return ""
+    
+    def is_available(self) -> bool:
+        """Check if at least one OCR engine is available."""
+        return len(self.engines_available) > 0

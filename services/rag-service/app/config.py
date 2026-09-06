@@ -63,9 +63,9 @@ class Settings(BaseSettings):
     embedding_dimension: int = 1024
     
     # OCR
-    tesseract_cmd: str = "tesseract"
     ocr_languages: str = "eng+hin+mar"
     enable_ocr: bool = True
+    ocr_min_confidence: float = 0.3  # Minimum OCR confidence threshold
     
     # Chunking
     chunk_size: int = 800
