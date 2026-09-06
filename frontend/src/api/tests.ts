@@ -143,6 +143,28 @@ export interface UserTestPerformance {
 
 // API Functions
 
+export async function getExamTemplates(examType?: ExamType): Promise<any> {
+  const response = await axios.get(`${API_BASE}/templates`, {
+    params: { exam_type: examType },
+  })
+  return response.data
+}
+
+export async function createTestFromTemplate(
+  templateId: string,
+  userId: string,
+  sourceDocumentIds?: string[]
+): Promise<TestMetadata> {
+  const response = await axios.post(`${API_BASE}/create-from-template`, null, {
+    params: {
+      template_id: templateId,
+      user_id: userId,
+      source_document_ids: sourceDocumentIds,
+    },
+  })
+  return response.data
+}
+
 export async function createTest(request: CreateTestRequest): Promise<TestMetadata> {
   const response = await axios.post(`${API_BASE}/create`, request)
   return response.data

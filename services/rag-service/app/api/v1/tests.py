@@ -10,12 +10,137 @@ from app.models.test_schemas import (
 )
 from app.services.test_engine import TestEngine
 from app.services.vector_store import VectorStoreService
+from app.services.exam_templates import ExamTemplates
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 # Global test engine instance
 test_engine = TestEngine()
+
+
+@router.get("/templates")
+async def get_exam_templates(exam_type: Optional[ExamType] = Query(None)):
+    """
+    Get pre-configured exam templates with accurate patterns.
+    
+    Args:
+        exam_type: Filter by exam type (optional)
+    
+    Returns:
+        List of exam templates with template IDs
+    """
+    try:
+        all_templates = ExamTemplates.get_all_templates()
+        
+        if exam_type:
+            # Filter by exam type
+            filtered = {
+                tid: template for tid, template in all_templates.items()
+                if template["exam_type"] == exam_type
+            }
+        else:
+            filtered = all_templates
+        
+        # Format response with template IDs
+        templates_list = [
+            {
+                "template_id": template_id,
+                **template_data
+            }
+            for template_id, template_data in filtered.items()
+        ]
+        
+        return {
+            "templates": templates_list,
+            "total": len(templates_list)
+        }
+    except Exception as e:
+        logger.error(f"Failed to fetch templates: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/create-from-template")
+async def create_test_from_template(
+    request: Request,
+    template_id: str = Query(...),
+    user_id: str = Query(...),
+    source_document_ids: Optional[List[str]] = Query(None)
+):
+    """
+    Create a test from pre-configured template.
+    
+    Args:
+        template_id: Template identifier (e.g., upsc_prelims_gs1)
+        user_id: User creating the test
+        source_document_ids: Optional documents to generate questions from
+    
+    Returns:
+        Created test metadata
+    """
+    try:
+        template = ExamTemplates.get_template(template_id)
+        
+        if not template:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        vector_store = request.app.state.vector_store
+        embedding_service = request.app.state.embedding_service
+        
+        # Get content from documents if provided
+        content_chunks = []
+        if source_document_ids:
+            for doc_id in source_document_ids:
+                query_embedding = await embedding_service.embed_query("exam preparation content")
+                search_results = await vector_store.search(
+                    query_embedding=query_embedding,
+                    user_id=user_id,
+                    document_ids=[doc_id],
+                    top_k=30
+                )
+                content_chunks.extend([result["content"] for result in search_results])
+        
+        if not content_chunks:
+            # Generate from template subjects/topics
+            subjects_str = ", ".join([s["name"] for s in template.get("sections", [])])
+            content_chunks = [f"Generate questions on: {subjects_str}"]
+        
+        # Extract subjects from template sections
+        from app.models.test_schemas import Subject
+        all_subjects = []
+        for section in template.get("sections", []):
+            all_subjects.extend(section.get("subjects", []))
+        
+        # Remove duplicates
+        unique_subjects = list(set(all_subjects))
+        
+        # Generate test
+        test_metadata, questions = await test_engine.generate_test_from_document(
+            name=template["name"],
+            description=template["description"],
+            exam_type=template["exam_type"],
+            subjects=unique_subjects,
+            duration_minutes=template["duration_minutes"],
+            total_questions=template["total_questions"],
+            difficulty_level=DifficultyLevel.MEDIUM,  # Use template default
+            content_chunks=content_chunks,
+            topic_filter=None,
+            negative_marking=template["negative_marking"],
+            user_id=user_id
+        )
+        
+        # Update with template-specific details
+        test_metadata.negative_marks_ratio = template.get("negative_marks_ratio", 0.25)
+        test_metadata.instructions = template.get("instructions", [])
+        
+        logger.info(f"Created test from template {template_id}: {test_metadata.test_id}")
+        return test_metadata
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Template test creation failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/create", response_model=TestMetadata)

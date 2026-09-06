@@ -30,6 +30,7 @@ import {
   TestAttempt,
   TestResult,
 } from '../api/tests'
+import ExamTestBrowser from './ExamTestBrowser'
 
 interface TestEnvironmentProps {
   userId: string
@@ -165,89 +166,15 @@ export default function TestEnvironment({ userId }: TestEnvironmentProps) {
   // Browse Tests View
   if (viewMode === 'browse') {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Mock Test Series</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              Practice with real exam patterns for UPSC, MPSC, SSC & more
-            </p>
-          </div>
-          <button
-            onClick={() => setViewMode('performance')}
-            className="btn-secondary flex items-center space-x-2"
-          >
-            <BarChart3 className="w-4 h-4" />
-            <span>My Performance</span>
-          </button>
-        </div>
-
-        {/* Exam Type Filters */}
-        <div className="flex items-center space-x-3 overflow-x-auto pb-2">
-          {Object.values(ExamType).map((examType) => (
-            <button
-              key={examType}
-              className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition-colors whitespace-nowrap text-sm font-medium"
-            >
-              {examType.toUpperCase()}
-            </button>
-          ))}
-        </div>
-
-        {/* Test Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testsData?.tests.map((test) => (
-            <div
-              key={test.test_id}
-              className="card hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => {
-                setSelectedTest(test)
-                setViewMode('instructions')
-              }}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <span className="px-3 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
-                  {test.exam_type.toUpperCase()}
-                </span>
-                <Trophy className="w-5 h-5 text-yellow-500" />
-              </div>
-
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{test.name}</h3>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">{test.description}</p>
-
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <BookOpen className="w-4 h-4" />
-                  <span>{test.total_questions} Questions</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Clock className="w-4 h-4" />
-                  <span>{test.duration_minutes} Min</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                <span className="text-sm text-gray-600">
-                  {test.total_marks} Marks
-                </span>
-                <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
-                  Start Test →
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {testsData?.tests.length === 0 && (
-          <div className="text-center py-12">
-            <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">No tests available yet</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Upload documents and create custom tests
-            </p>
-          </div>
-        )}
-      </div>
+      <ExamTestBrowser
+        userId={userId}
+        onTestCreated={async (testId) => {
+          // Fetch the created test and show instructions
+          const test = await getTest(testId)
+          setSelectedTest(test)
+          setViewMode('instructions')
+        }}
+      />
     )
   }
 
