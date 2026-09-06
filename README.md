@@ -1,9 +1,27 @@
 # Sarkari AI - Intelligent Exam Prep Assistant
 
-RAG + Agent-based assistant for competitive exam aspirants (UPSC, MPSC, SSC, Banking, Railways).
+> **Status:** ✅ MVP Complete | 🚀 Ready for Beta Testing
 
-## Problem Statement
-Students preparing for government exams struggle with scattered PDFs (syllabi, past papers, notifications, circulars in Hindi/Marathi). Sarkari AI provides a unified interface to upload documents, ask questions, check eligibility, and generate quizzes.
+RAG + Agent-based AI assistant for competitive exam aspirants preparing for UPSC, MPSC, SSC, Banking, and Railways exams in India.
+
+## 🎯 Problem Statement
+
+Students preparing for government exams struggle with:
+- Scattered PDFs (syllabi, past papers, notifications)
+- Scanned circulars in Hindi/Marathi with poor OCR
+- Complex eligibility criteria across multiple documents
+- No centralized way to query study material
+- Expensive test series (₹500-5000/year)
+
+**Sarkari AI Solution:** Upload PDFs once → Ask unlimited questions → Get answers with page citations → Generate practice quizzes
+
+## ✨ What Makes This Different?
+
+1. **Built for Indic Languages:** OCR support for Hindi/Marathi scanned government circulars
+2. **Cost-Optimized:** Gemini Flash-8B keeps costs near-zero (10x cheaper than GPT-4)
+3. **Page-Level Citations:** Every answer cites exact page numbers for verification
+4. **Smart Query Routing:** LangGraph automatically classifies and routes queries
+5. **Proven Market:** Test series market already exists at ₹500-5000/year
 
 ## Tech Stack
 

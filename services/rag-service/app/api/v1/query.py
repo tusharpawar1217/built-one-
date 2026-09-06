@@ -89,6 +89,15 @@ async def process_query(
         
         processing_time = (time.time() - start_time) * 1000  # Convert to ms
         
+        # Increment query count (after successful processing)
+        await rate_limiter.increment_query_count(query_request.user_id)
+        
+        # Get updated usage stats
+        usage_stats = await rate_limiter.get_usage_stats(
+            query_request.user_id,
+            query_request.user_tier
+        )
+        
         # Construct response
         response = QueryResponse(
             answer=result["answer"],
@@ -101,7 +110,8 @@ async def process_query(
                 "documents_searched": len(query_request.document_ids),
                 "chunks_retrieved": len(result["retrieved_chunks"]),
                 "chunks_used": len(result["reranked_chunks"]),
-                "processing_steps": result["processing_steps"]
+                "processing_steps": result["processing_steps"],
+                "rate_limit": usage_stats
             }
         )
         

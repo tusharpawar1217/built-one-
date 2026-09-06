@@ -91,3 +91,7 @@ logs/
 # OS
 Thumbs.db
 .DS_Store
+
+# Documentation (exclude all .md except README.md)
+*.md
+!README.md

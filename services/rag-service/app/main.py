@@ -70,6 +70,10 @@ app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(documents.router, prefix="/api/v1/documents", tags=["documents"])
 app.include_router(query.router, prefix="/api/v1/query", tags=["query"])
 
+# Import usage router
+from app.api.v1 import usage
+app.include_router(usage.router, prefix="/api/v1/usage", tags=["usage"])
+
 
 @app.get("/")
 async def root():
