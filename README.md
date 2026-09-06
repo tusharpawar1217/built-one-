@@ -77,9 +77,8 @@ sarkari-ai/
 ## Quick Start
 
 ### Prerequisites
-- Python 3.11+
+- Python 3.10 (recommended for PaddleOCR compatibility)
 - Node.js 18+
-- Java 17+
 - Docker & Docker Compose
 - Gemini API key
 
@@ -100,19 +99,30 @@ docker-compose up -d postgres redis qdrant
 3. **Start RAG service (FastAPI)**
 ```bash
 cd services/rag-service
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Create virtual environment with Python 3.10 (best for PaddleOCR)
+py -3.10 -m venv venv          # Windows
+# OR
+python3.10 -m venv venv        # Linux/Mac
+
+# Activate virtual environment
+.\venv\Scripts\Activate.ps1    # Windows PowerShell
+# OR
+source venv/bin/activate       # Linux/Mac
+
+# Upgrade pip
+python -m pip install --upgrade pip
+
+# Install dependencies
 pip install -r requirements.txt
+```
+
+4. **Start the service**
+```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-4. **Start Core service (Spring Boot)**
-```bash
-cd services/core-service
-./mvnw spring-boot:run
-```
-
-5. **Start Frontend**
+5. **Start Frontend** (in a new terminal)
 ```bash
 cd frontend
 npm install

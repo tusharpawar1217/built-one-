@@ -1,21 +1,22 @@
 # FastAPI framework
-fastapi==0.109.2
-uvicorn[standard]==0.27.1
-pydantic==2.6.1
-pydantic-settings==2.1.0
+fastapi>=0.109.2
+uvicorn[standard]>=0.27.1
+pydantic>=2.6.1
+pydantic-settings>=2.1.0
 
 # PDF Processing
-PyMuPDF==1.23.22
+PyMuPDF>=1.24.0  # Updated for better compatibility
 easyocr==1.7.0
 paddleocr==2.7.3
-paddlepaddle==2.5.2  # CPU version, use paddlepaddle-gpu for GPU
+paddlepaddle==3.0.0  # Updated to latest stable version
 pdf2image==1.17.0
 pillow==10.2.0
+opencv-python-headless==4.8.1.78  # Required for OCR
 
 # Text Processing & Embeddings
 sentence-transformers==2.3.1
-langchain==0.1.8
-langchain-community==0.0.20
+langchain>=0.1.8
+langchain-community>=0.0.21
 langchain-google-genai==0.0.9
 langgraph==0.0.26
 tiktoken==0.5.2
