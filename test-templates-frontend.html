@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Templates API</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .template { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Templates API</h1>
+    
+    <div>
+        <button onclick="testHealth()">Test Health</button>
+        <button onclick="testTemplates()">Test Templates</button>
+        <button onclick="testUPSC()">Test UPSC Only</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testHealth() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Testing health endpoint...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/health');
+                const data = await response.json();
+                result.innerHTML = '<div class="success"><h3>✓ Health Check Passed</h3><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+            } catch (error) {
+                result.innerHTML = '<div class="error"><h3>✗ Health Check Failed</h3><p>' + error.message + '</p></div>';
+            }
+        }
+        
+        async function testTemplates() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Fetching templates...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/tests/templates');
+                const data = await response.json();
+                
+                let html = '<div class="success"><h3>✓ Templates Loaded: ' + data.total + '</h3>';
+                
+                data.templates.forEach(template => {
+                    html += '<div class="template">';
+                    html += '<h4>' + template.name + '</h4>';
+                    html += '<p>ID: ' + template.template_id + '</p>';
+                    html += '<p>Exam: ' + template.exam_type + '</p>';
+                    html += '<p>Questions: ' + template.total_questions + ' | Duration: ' + template.duration_minutes + ' min</p>';
+                    html += '<p>Sections: ' + (template.sections ? template.sections.length : 0) + '</p>';
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+                result.innerHTML = html;
+            } catch (error) {
+                result.innerHTML = '<div class="error"><h3>✗ Templates Fetch Failed</h3><p>' + error.message + '</p><p>Make sure backend is running on port 8000!</p></div>';
+            }
+        }
+        
+        async function testUPSC() {
+            const result = document.getElementById('result');
+            result.innerHTML = '<p>Fetching UPSC templates...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/tests/templates?exam_type=upsc');
+                const data = await response.json();
+                
+                result.innerHTML = '<div class="success"><h3>✓ UPSC Templates: ' + data.total + '</h3><pre>' + JSON.stringify(data, null, 2) + '</pre></div>';
+            } catch (error) {
+                result.innerHTML = '<div class="error"><h3>✗ Failed</h3><p>' + error.message + '</p></div>';
+            }
+        }
+    </script>
+</body>
+</html>

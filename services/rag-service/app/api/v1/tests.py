@@ -42,14 +42,27 @@ async def get_exam_templates(exam_type: Optional[ExamType] = Query(None)):
         else:
             filtered = all_templates
         
-        # Format response with template IDs
-        templates_list = [
-            {
-                "template_id": template_id,
-                **template_data
-            }
-            for template_id, template_data in filtered.items()
-        ]
+        # Format response with template IDs and convert enums to strings
+        templates_list = []
+        for template_id, template_data in filtered.items():
+            # Create a copy and convert enum values to strings
+            template_dict = dict(template_data)
+            template_dict["template_id"] = template_id
+            
+            # Convert ExamType enum to string
+            if hasattr(template_dict["exam_type"], "value"):
+                template_dict["exam_type"] = template_dict["exam_type"].value
+            
+            # Convert Subject enums in sections to strings
+            if "sections" in template_dict:
+                for section in template_dict["sections"]:
+                    if "subjects" in section:
+                        section["subjects"] = [
+                            s.value if hasattr(s, "value") else s 
+                            for s in section["subjects"]
+                        ]
+            
+            templates_list.append(template_dict)
         
         return {
             "templates": templates_list,

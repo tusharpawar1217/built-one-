@@ -13,10 +13,21 @@ export default function ExamTestBrowser({ userId, onTestCreated }: ExamTestBrows
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null)
 
   // Fetch templates for selected exam
-  const { data: templatesData, isLoading } = useQuery({
+  const { data: templatesData, isLoading, error } = useQuery({
     queryKey: ['exam-templates', selectedExam],
-    queryFn: () => getExamTemplates(selectedExam),
+    queryFn: () => getExamTemplates(), // Get all templates first
   })
+
+  // Debug: Log the data
+  console.log('Templates Data:', templatesData)
+  console.log('Selected Exam:', selectedExam)
+  console.log('Loading:', isLoading)
+  console.log('Error:', error)
+  
+  // Filter templates by selected exam on the frontend
+  const filteredTemplates = templatesData?.templates?.filter(
+    (t: any) => t.exam_type === selectedExam
+  ) || []
 
   // Create test from template
   const createTestMutation = useMutation({
@@ -86,9 +97,9 @@ export default function ExamTestBrowser({ userId, onTestCreated }: ExamTestBrows
       )}
 
       {/* Template Cards */}
-      {!isLoading && templatesData && (
+      {!isLoading && templatesData && filteredTemplates.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {templatesData.templates.map((template: any, idx: number) => (
+          {filteredTemplates.map((template: any, idx: number) => (
             <div
               key={idx}
               className="card hover:shadow-xl transition-all cursor-pointer border-2 border-transparent hover:border-primary-200"
@@ -229,10 +240,20 @@ export default function ExamTestBrowser({ userId, onTestCreated }: ExamTestBrows
       )}
 
       {/* Empty State */}
-      {!isLoading && templatesData && templatesData.templates.length === 0 && (
+      {!isLoading && templatesData && filteredTemplates.length === 0 && (
         <div className="text-center py-12">
           <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-600">No test templates available for {selectedExam.toUpperCase()}</p>
+          <p className="text-sm text-gray-500 mt-2">Total templates loaded: {templatesData?.templates?.length || 0}</p>
+        </div>
+      )}
+      
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-12">
+          <AlertCircle className="w-16 h-16 text-red-300 mx-auto mb-4" />
+          <p className="text-red-600">Failed to load templates</p>
+          <p className="text-sm text-gray-500 mt-2">{error.message}</p>
         </div>
       )}
 

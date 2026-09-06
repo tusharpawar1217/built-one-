@@ -1,6 +1,5 @@
 """Exam-specific templates with accurate patterns and section timings."""
 from typing import Dict, List, Any
-from app.models.test_schemas import ExamType, Subject, DifficultyLevel
 
 
 class ExamTemplates:
@@ -11,7 +10,7 @@ class ExamTemplates:
         """UPSC Civil Services Prelims - General Studies Paper I"""
         return {
             "name": "UPSC Prelims - GS Paper I",
-            "exam_type": ExamType.UPSC,
+            "exam_type": "upsc",  # String instead of enum
             "description": "Civil Services Preliminary Examination - General Studies Paper I",
             "total_questions": 100,
             "total_marks": 200.0,  # 2 marks per question
@@ -22,43 +21,43 @@ class ExamTemplates:
             "sections": [
                 {
                     "name": "Indian History & Culture",
-                    "subjects": [Subject.INDIAN_HISTORY],
+                    "subjects": ["indian_history"],  # String instead of enum
                     "questions": 15,
                     "marks_per_question": 2,
                 },
                 {
                     "name": "Indian Polity & Governance",
-                    "subjects": [Subject.INDIAN_POLITY],
+                    "subjects": ["indian_polity"],
                     "questions": 20,
                     "marks_per_question": 2,
                 },
                 {
                     "name": "Geography",
-                    "subjects": [Subject.GEOGRAPHY],
+                    "subjects": ["geography"],
                     "questions": 15,
                     "marks_per_question": 2,
                 },
                 {
                     "name": "Economics & Social Development",
-                    "subjects": [Subject.ECONOMICS],
+                    "subjects": ["economics"],
                     "questions": 15,
                     "marks_per_question": 2,
                 },
                 {
                     "name": "Environment & Ecology",
-                    "subjects": [Subject.ENVIRONMENT],
+                    "subjects": ["environment"],
                     "questions": 15,
                     "marks_per_question": 2,
                 },
                 {
                     "name": "General Science",
-                    "subjects": [Subject.SCIENCE_TECH],
+                    "subjects": ["science_tech"],
                     "questions": 10,
                     "marks_per_question": 2,
                 },
                 {
                     "name": "Current Affairs",
-                    "subjects": [Subject.CURRENT_AFFAIRS],
+                    "subjects": ["current_affairs"],
                     "questions": 10,
                     "marks_per_question": 2,
                 },
@@ -83,7 +82,7 @@ class ExamTemplates:
         """UPSC Civil Services Prelims - General Studies Paper II (CSAT)"""
         return {
             "name": "UPSC Prelims - GS Paper II (CSAT)",
-            "exam_type": ExamType.UPSC,
+            "exam_type": "upsc",
             "description": "Civil Services Preliminary Examination - CSAT",
             "total_questions": 80,
             "total_marks": 200.0,  # 2.5 marks per question
@@ -94,25 +93,25 @@ class ExamTemplates:
             "sections": [
                 {
                     "name": "Comprehension",
-                    "subjects": [Subject.ENGLISH],
+                    "subjects": ["english"],
                     "questions": 30,
                     "marks_per_question": 2.5,
                 },
                 {
                     "name": "Logical Reasoning",
-                    "subjects": [Subject.REASONING],
+                    "subjects": ["reasoning"],
                     "questions": 25,
                     "marks_per_question": 2.5,
                 },
                 {
                     "name": "Analytical & Decision Making",
-                    "subjects": [Subject.REASONING],
+                    "subjects": ["reasoning"],
                     "questions": 15,
                     "marks_per_question": 2.5,
                 },
                 {
                     "name": "General Mental Ability",
-                    "subjects": [Subject.QUANTITATIVE],
+                    "subjects": ["quantitative"],
                     "questions": 10,
                     "marks_per_question": 2.5,
                 },
@@ -136,7 +135,7 @@ class ExamTemplates:
         """MPSC State Services Prelims"""
         return {
             "name": "MPSC Prelims - General Studies",
-            "exam_type": ExamType.MPSC,
+            "exam_type": "mpsc",
             "description": "Maharashtra Public Service Commission Preliminary Examination",
             "total_questions": 100,
             "total_marks": 100.0,  # 1 mark per question
@@ -147,37 +146,37 @@ class ExamTemplates:
             "sections": [
                 {
                     "name": "Indian & Maharashtra History",
-                    "subjects": [Subject.INDIAN_HISTORY],
+                    "subjects": ["indian_history"],
                     "questions": 20,
                     "marks_per_question": 1,
                 },
                 {
                     "name": "Indian Polity & Maharashtra Government",
-                    "subjects": [Subject.INDIAN_POLITY],
+                    "subjects": ["indian_polity"],
                     "questions": 20,
                     "marks_per_question": 1,
                 },
                 {
                     "name": "Geography & Economy",
-                    "subjects": [Subject.GEOGRAPHY, Subject.ECONOMICS],
+                    "subjects": ["geography", "economics"],
                     "questions": 20,
                     "marks_per_question": 1,
                 },
                 {
                     "name": "Science & Technology",
-                    "subjects": [Subject.SCIENCE_TECH],
+                    "subjects": ["science_tech"],
                     "questions": 15,
                     "marks_per_question": 1,
                 },
                 {
                     "name": "Current Events",
-                    "subjects": [Subject.CURRENT_AFFAIRS],
+                    "subjects": ["current_affairs"],
                     "questions": 15,
                     "marks_per_question": 1,
                 },
                 {
                     "name": "General Knowledge",
-                    "subjects": [Subject.GENERAL_KNOWLEDGE],
+                    "subjects": ["general_knowledge"],
                     "questions": 10,
                     "marks_per_question": 1,
                 },
@@ -202,7 +201,7 @@ class ExamTemplates:
         """SSC Combined Graduate Level Tier 1"""
         return {
             "name": "SSC CGL Tier I",
-            "exam_type": ExamType.SSC,
+            "exam_type": "ssc",
             "description": "Staff Selection Commission - Combined Graduate Level Tier I",
             "total_questions": 100,
             "total_marks": 200.0,  # 2 marks per question
@@ -213,28 +212,28 @@ class ExamTemplates:
             "sections": [
                 {
                     "name": "General Intelligence & Reasoning",
-                    "subjects": [Subject.REASONING],
+                    "subjects": ["reasoning"],
                     "questions": 25,
                     "marks_per_question": 2,
                     "time_minutes": 15,
                 },
                 {
                     "name": "General Awareness",
-                    "subjects": [Subject.GENERAL_KNOWLEDGE, Subject.CURRENT_AFFAIRS],
+                    "subjects": ["general_knowledge", "current_affairs"],
                     "questions": 25,
                     "marks_per_question": 2,
                     "time_minutes": 15,
                 },
                 {
                     "name": "Quantitative Aptitude",
-                    "subjects": [Subject.QUANTITATIVE],
+                    "subjects": ["quantitative"],
                     "questions": 25,
                     "marks_per_question": 2,
                     "time_minutes": 15,
                 },
                 {
                     "name": "English Comprehension",
-                    "subjects": [Subject.ENGLISH],
+                    "subjects": ["english"],
                     "questions": 25,
                     "marks_per_question": 2,
                     "time_minutes": 15,
@@ -260,7 +259,7 @@ class ExamTemplates:
         """SSC Combined Higher Secondary Level"""
         return {
             "name": "SSC CHSL Tier I",
-            "exam_type": ExamType.SSC,
+            "exam_type": "ssc",
             "description": "Staff Selection Commission - Combined Higher Secondary Level",
             "total_questions": 100,
             "total_marks": 200.0,
@@ -271,25 +270,25 @@ class ExamTemplates:
             "sections": [
                 {
                     "name": "English Language",
-                    "subjects": [Subject.ENGLISH],
+                    "subjects": ["english"],
                     "questions": 25,
                     "marks_per_question": 2,
                 },
                 {
                     "name": "General Intelligence",
-                    "subjects": [Subject.REASONING],
+                    "subjects": ["reasoning"],
                     "questions": 25,
                     "marks_per_question": 2,
                 },
                 {
                     "name": "Quantitative Aptitude",
-                    "subjects": [Subject.QUANTITATIVE],
+                    "subjects": ["quantitative"],
                     "questions": 25,
                     "marks_per_question": 2,
                 },
                 {
                     "name": "General Awareness",
-                    "subjects": [Subject.GENERAL_KNOWLEDGE],
+                    "subjects": ["general_knowledge"],
                     "questions": 25,
                     "marks_per_question": 2,
                 },
@@ -312,7 +311,7 @@ class ExamTemplates:
         """IBPS PO Prelims"""
         return {
             "name": "IBPS PO Prelims",
-            "exam_type": ExamType.BANKING,
+            "exam_type": "banking",
             "description": "Institute of Banking Personnel Selection - Probationary Officer Prelims",
             "total_questions": 100,
             "total_marks": 100.0,
@@ -323,7 +322,7 @@ class ExamTemplates:
             "sections": [
                 {
                     "name": "English Language",
-                    "subjects": [Subject.ENGLISH],
+                    "subjects": ["english"],
                     "questions": 30,
                     "marks_per_question": 1,
                     "time_minutes": 20,
@@ -331,7 +330,7 @@ class ExamTemplates:
                 },
                 {
                     "name": "Quantitative Aptitude",
-                    "subjects": [Subject.QUANTITATIVE],
+                    "subjects": ["quantitative"],
                     "questions": 35,
                     "marks_per_question": 1,
                     "time_minutes": 20,
@@ -339,7 +338,7 @@ class ExamTemplates:
                 },
                 {
                     "name": "Reasoning Ability",
-                    "subjects": [Subject.REASONING],
+                    "subjects": ["reasoning"],
                     "questions": 35,
                     "marks_per_question": 1,
                     "time_minutes": 20,
@@ -367,7 +366,7 @@ class ExamTemplates:
         """IBPS Clerk Prelims"""
         return {
             "name": "IBPS Clerk Prelims",
-            "exam_type": ExamType.BANKING,
+            "exam_type": "banking",
             "description": "Institute of Banking Personnel Selection - Clerk Prelims",
             "total_questions": 100,
             "total_marks": 100.0,
@@ -378,7 +377,7 @@ class ExamTemplates:
             "sections": [
                 {
                     "name": "English Language",
-                    "subjects": [Subject.ENGLISH],
+                    "subjects": ["english"],
                     "questions": 30,
                     "marks_per_question": 1,
                     "time_minutes": 20,
@@ -386,7 +385,7 @@ class ExamTemplates:
                 },
                 {
                     "name": "Numerical Ability",
-                    "subjects": [Subject.QUANTITATIVE],
+                    "subjects": ["quantitative"],
                     "questions": 35,
                     "marks_per_question": 1,
                     "time_minutes": 20,
@@ -394,7 +393,7 @@ class ExamTemplates:
                 },
                 {
                     "name": "Reasoning Ability",
-                    "subjects": [Subject.REASONING],
+                    "subjects": ["reasoning"],
                     "questions": 35,
                     "marks_per_question": 1,
                     "time_minutes": 20,
@@ -420,7 +419,7 @@ class ExamTemplates:
         """SBI PO Prelims"""
         return {
             "name": "SBI PO Prelims",
-            "exam_type": ExamType.BANKING,
+            "exam_type": "banking",
             "description": "State Bank of India - Probationary Officer Prelims",
             "total_questions": 100,
             "total_marks": 100.0,
@@ -431,7 +430,7 @@ class ExamTemplates:
             "sections": [
                 {
                     "name": "English Language",
-                    "subjects": [Subject.ENGLISH],
+                    "subjects": ["english"],
                     "questions": 30,
                     "marks_per_question": 1,
                     "time_minutes": 20,
@@ -439,7 +438,7 @@ class ExamTemplates:
                 },
                 {
                     "name": "Quantitative Aptitude",
-                    "subjects": [Subject.QUANTITATIVE],
+                    "subjects": ["quantitative"],
                     "questions": 35,
                     "marks_per_question": 1,
                     "time_minutes": 20,
@@ -447,7 +446,7 @@ class ExamTemplates:
                 },
                 {
                     "name": "Reasoning Ability",
-                    "subjects": [Subject.REASONING],
+                    "subjects": ["reasoning"],
                     "questions": 35,
                     "marks_per_question": 1,
                     "time_minutes": 20,
@@ -497,3 +496,4 @@ class ExamTemplates:
         """Get specific template by ID."""
         all_templates = cls.get_all_templates()
         return all_templates.get(template_id)
+
