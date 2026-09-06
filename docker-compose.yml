@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - User data, document metadata
+  postgres:
+    image: postgres:16-alpine
+    container_name: sarkari-ai-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sarkari_ai}
+      POSTGRES_USER: ${POSTGRES_USER:-sarkari_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sarkari_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sarkari_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Rate limiting, caching
+  redis:
+    image: redis:7-alpine
+    container_name: sarkari-ai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Qdrant - Vector database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: sarkari-ai-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # FastAPI RAG Service (optional - can run locally for dev)
+  rag-service:
+    build:
+      context: ./services/rag-service
+      dockerfile: Dockerfile
+    container_name: sarkari-ai-rag
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - REDIS_HOST=redis
+      - QDRANT_HOST=qdrant
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-1.5-flash-8b}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-BAAI/bge-m3}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./services/rag-service:/app
+      - model_cache:/root/.cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    profiles:
+      - full
+
+  # Spring Boot Core Service (optional - can run locally for dev)
+  core-service:
+    build:
+      context: ./services/core-service
+      dockerfile: Dockerfile
+    container_name: sarkari-ai-core
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB:-sarkari_ai}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER:-sarkari_user}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:-sarkari_password}
+      - SPRING_REDIS_HOST=redis
+      - RAG_SERVICE_URL=http://rag-service:8000
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - full
+
+  # React Frontend (optional - usually run locally for dev)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sarkari-ai-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=${CORE_SERVICE_URL:-http://localhost:8080}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - core-service
+    profiles:
+      - full
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+  model_cache:

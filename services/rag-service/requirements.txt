@@ -1,0 +1,59 @@
+# FastAPI framework
+fastapi==0.109.2
+uvicorn[standard]==0.27.1
+pydantic==2.6.1
+pydantic-settings==2.1.0
+
+# PDF Processing
+PyMuPDF==1.23.22
+pytesseract==0.3.10
+easyocr==1.7.0
+paddleocr==2.7.3
+pdf2image==1.17.0
+pillow==10.2.0
+
+# Text Processing & Embeddings
+sentence-transformers==2.3.1
+langchain==0.1.8
+langchain-community==0.0.20
+langchain-google-genai==0.0.9
+langgraph==0.0.26
+tiktoken==0.5.2
+
+# Vector Database
+qdrant-client==1.7.3
+
+# Database & Caching
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.25
+redis==5.0.1
+alembic==1.13.1
+
+# Storage
+boto3==1.34.44
+
+# ML Utilities
+numpy==1.26.4
+torch==2.2.0
+transformers==4.37.2
+
+# Reranker
+rank-bm25==0.2.2
+FlagEmbedding==1.2.3
+
+# HTTP & Utilities
+httpx==0.26.0
+python-multipart==0.0.9
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+tenacity==8.2.3
+
+# Monitoring & Logging
+python-json-logger==2.0.7
+prometheus-fastapi-instrumentator==6.1.0
+
+# Development
+pytest==8.0.0
+pytest-asyncio==0.23.4
+black==24.1.1
+ruff==0.2.1
