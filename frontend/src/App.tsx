@@ -1,18 +1,27 @@
 import { useState } from 'react'
-import { FileText, MessageSquare, Upload } from 'lucide-react'
+import { FileText, MessageSquare, Upload, Brain, Shield } from 'lucide-react'
 import DocumentUpload from './components/DocumentUpload'
 import ChatInterface from './components/ChatInterface'
 import DocumentList from './components/DocumentList'
+import QuizGenerator from './components/QuizGenerator'
+import EligibilityChecker from './components/EligibilityChecker'
+
+type TabType = 'chat' | 'quiz' | 'eligibility'
 
 function App() {
   const [userId] = useState('demo-user') // TODO: Replace with actual auth
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([])
   const [uploadedDocuments, setUploadedDocuments] = useState<any[]>([])
+  const [activeTab, setActiveTab] = useState<TabType>('chat')
 
   const handleDocumentUploaded = (document: any) => {
     setUploadedDocuments(prev => [...prev, document])
     setSelectedDocuments(prev => [...prev, document.document_id])
   }
+
+  const selectedDocument = uploadedDocuments.find(
+    doc => doc.document_id === selectedDocuments[0]
+  )
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -70,17 +79,90 @@ function App() {
             </div>
           </div>
 
-          {/* Right Section - Chat Interface */}
+          {/* Right Section - Tabs */}
           <div className="lg:col-span-2">
             <div className="card h-[calc(100vh-180px)]">
-              <div className="flex items-center space-x-2 mb-4">
-                <MessageSquare className="w-5 h-5 text-primary-600" />
-                <h2 className="text-lg font-semibold text-gray-900">Ask Questions</h2>
+              {/* Tab Navigation */}
+              <div className="flex items-center space-x-1 mb-6 border-b border-gray-200 pb-4">
+                <button
+                  onClick={() => setActiveTab('chat')}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                    activeTab === 'chat'
+                      ? 'bg-primary-100 text-primary-700'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span className="font-medium">Ask Questions</span>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('quiz')}
+                  disabled={selectedDocuments.length === 0}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                    activeTab === 'quiz'
+                      ? 'bg-primary-100 text-primary-700'
+                      : selectedDocuments.length === 0
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Brain className="w-4 h-4" />
+                  <span className="font-medium">Mock Test</span>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('eligibility')}
+                  disabled={selectedDocuments.length === 0}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                    activeTab === 'eligibility'
+                      ? 'bg-primary-100 text-primary-700'
+                      : selectedDocuments.length === 0
+                      ? 'text-gray-400 cursor-not-allowed'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <Shield className="w-4 h-4" />
+                  <span className="font-medium">Eligibility</span>
+                </button>
               </div>
-              <ChatInterface
-                userId={userId}
-                selectedDocuments={selectedDocuments}
-              />
+
+              {/* Tab Content */}
+              <div className="h-[calc(100%-80px)] overflow-y-auto">
+                {activeTab === 'chat' && (
+                  <ChatInterface
+                    userId={userId}
+                    selectedDocuments={selectedDocuments}
+                  />
+                )}
+                
+                {activeTab === 'quiz' && selectedDocuments.length > 0 && selectedDocument && (
+                  <QuizGenerator
+                    userId={userId}
+                    documentId={selectedDocuments[0]}
+                    documentName={selectedDocument.filename}
+                  />
+                )}
+                
+                {activeTab === 'eligibility' && selectedDocuments.length > 0 && selectedDocument && (
+                  <EligibilityChecker
+                    userId={userId}
+                    documentId={selectedDocuments[0]}
+                    documentName={selectedDocument.filename}
+                  />
+                )}
+                
+                {(activeTab === 'quiz' || activeTab === 'eligibility') && selectedDocuments.length === 0 && (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <p className="text-gray-600">
+                        Select a document to use this feature
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
