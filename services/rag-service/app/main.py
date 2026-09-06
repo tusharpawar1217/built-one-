@@ -70,11 +70,12 @@ app.include_router(health.router, prefix="/api/v1", tags=["health"])
 app.include_router(documents.router, prefix="/api/v1/documents", tags=["documents"])
 app.include_router(query.router, prefix="/api/v1/query", tags=["query"])
 
-# Import usage, eligibility, and quiz routers
-from app.api.v1 import usage, eligibility, quiz
+# Import usage, eligibility, quiz, and tests routers
+from app.api.v1 import usage, eligibility, quiz, tests
 app.include_router(usage.router, prefix="/api/v1/usage", tags=["usage"])
 app.include_router(eligibility.router, prefix="/api/v1/eligibility", tags=["eligibility"])
 app.include_router(quiz.router, prefix="/api/v1/quiz", tags=["quiz"])
+app.include_router(tests.router, prefix="/api/v1/tests", tags=["tests"])
 
 
 @app.get("/")

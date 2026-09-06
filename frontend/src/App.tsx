@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { FileText, MessageSquare, Upload, Brain, Shield } from 'lucide-react'
+import { FileText, MessageSquare, Upload, Brain, Shield, GraduationCap } from 'lucide-react'
 import DocumentUpload from './components/DocumentUpload'
 import ChatInterface from './components/ChatInterface'
 import DocumentList from './components/DocumentList'
 import QuizGenerator from './components/QuizGenerator'
 import EligibilityChecker from './components/EligibilityChecker'
+import TestEnvironment from './components/TestEnvironment'
 
-type TabType = 'chat' | 'quiz' | 'eligibility'
+type TabType = 'chat' | 'quiz' | 'eligibility' | 'tests'
 
 function App() {
   const [userId] = useState('demo-user') // TODO: Replace with actual auth
@@ -83,10 +84,10 @@ function App() {
           <div className="lg:col-span-2">
             <div className="card h-[calc(100vh-180px)]">
               {/* Tab Navigation */}
-              <div className="flex items-center space-x-1 mb-6 border-b border-gray-200 pb-4">
+              <div className="flex items-center space-x-1 mb-6 border-b border-gray-200 pb-4 overflow-x-auto">
                 <button
                   onClick={() => setActiveTab('chat')}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
                     activeTab === 'chat'
                       ? 'bg-primary-100 text-primary-700'
                       : 'text-gray-600 hover:bg-gray-100'
@@ -97,9 +98,21 @@ function App() {
                 </button>
                 
                 <button
+                  onClick={() => setActiveTab('tests')}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
+                    activeTab === 'tests'
+                      ? 'bg-primary-100 text-primary-700'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <GraduationCap className="w-4 h-4" />
+                  <span className="font-medium">Test Series</span>
+                </button>
+                
+                <button
                   onClick={() => setActiveTab('quiz')}
                   disabled={selectedDocuments.length === 0}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
                     activeTab === 'quiz'
                       ? 'bg-primary-100 text-primary-700'
                       : selectedDocuments.length === 0
@@ -108,13 +121,13 @@ function App() {
                   }`}
                 >
                   <Brain className="w-4 h-4" />
-                  <span className="font-medium">Mock Test</span>
+                  <span className="font-medium">Quick Quiz</span>
                 </button>
                 
                 <button
                   onClick={() => setActiveTab('eligibility')}
                   disabled={selectedDocuments.length === 0}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors whitespace-nowrap ${
                     activeTab === 'eligibility'
                       ? 'bg-primary-100 text-primary-700'
                       : selectedDocuments.length === 0
@@ -134,6 +147,10 @@ function App() {
                     userId={userId}
                     selectedDocuments={selectedDocuments}
                   />
+                )}
+                
+                {activeTab === 'tests' && (
+                  <TestEnvironment userId={userId} />
                 )}
                 
                 {activeTab === 'quiz' && selectedDocuments.length > 0 && selectedDocument && (
