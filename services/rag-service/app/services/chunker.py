@@ -2,7 +2,7 @@
 import logging
 import re
 from typing import List, Dict
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from app.config import get_settings
 from app.models.schemas import DocumentChunk, ChunkMetadata
